@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SoundVault | 高中音樂人的大腦外包系統 (Second Brain for High School Musicians)</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        studio: {
+                            bg: '#0b0f19',
+                            card: '#161e31',
+                            border: '#2a364f',
+                            hover: '#222d46'
+                        },
+                        neon: {
+                            purple: '#a855f7',
+                            cyan: '#06b6d4',
+                            pink: '#f43f5e',
+                            yellow: '#eab308'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', '"Noto Sans TC"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts & FontAwesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body {
+            background-color: #0b0f19;
+            color: #f3f4f6;
+            font-family: 'Plus Jakarta Sans', 'Noto Sans TC', sans-serif;
+            overflow-x: hidden;
+        }
+        
+        /* Custom Glowing effects & Gradients */
+        .glow-purple {
+            box-shadow: 0 0 25px -5px rgba(168, 85, 247, 0.4);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
+        }
+        .text-glow {
+            text-shadow: 0 0 12px rgba(168, 85, 247, 0.6);
+        }
+        .text-glow-cyan {
+            text-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+        }
+        
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(22, 30, 49, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #2a364f;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a855f7;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-neon-purple selection:text-white">
+
+    <!-- Navbar Header -->
+    <header class="sticky top-0 z-40 w-full glass-panel border-b border-studio-border/60">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            <!-- Logo -->
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-neon-purple to-neon-cyan flex items-center justify-center glow-purple">
+                    <i class="fa-solid font-bold fa-brain text-slate-900 text-xl"></i>
+                </div>
+                <div>
+                    <span class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-neon-cyan">SoundVault</span>
+                    <span class="text-xs px-2 py-0.5 ml-2 rounded-full bg-neon-purple/20 text-neon-purple border border-neon-purple/30 font-semibold hidden sm:inline-block">高中音樂專用大腦</span>
+                </div>
+            </div>
+
+            <!-- Header Quick Stats & Metronome Launch -->
+            <div class="flex items-center space-x-3 sm:space-x-6">
+                <button onclick="toggleMetronomeModal()" class="px-3.5 py-2 rounded-xl bg-studio-card hover:bg-studio-hover border border-neon-cyan/40 text-neon-cyan transition-all flex items-center space-x-2 text-sm font-semibold shadow-lg hover:shadow-neon-cyan/20">
+                    <i class="fa-solid fa-compact-disc animate-spin text-xs" style="animation-duration: 4s;"></i>
+                    <span class="hidden sm:inline">線上節拍器</span>
+                    <span id="nav-bpm-display" class="bg-neon-cyan/20 text-neon-cyan px-2 py-0.5 rounded text-xs">120 BPM</span>
+                </button>
+                <button onclick="openQuickCaptureModal()" class="px-4 py-2 rounded-xl bg-gradient-to-r from-neon-purple to-neon-pink hover:opacity-90 text-white font-bold text-sm transition-all flex items-center space-x-2 glow-purple transform active:scale-95">
+                    <i class="fa-solid fa-plus text-xs"></i>
+                    <span>快速捕捉靈感</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+        
+        <!-- Hero Section -->
+        <section class="relative rounded-3xl p-8 sm:p-12 overflow-hidden border border-studio-border glass-panel">
+            <!-- Background Glow Decor -->
+            <div class="absolute -top-24 -left-24 w-72 h-72 bg-neon-purple/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-24 -right-24 w-80 h-80 bg-neon-cyan/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <div class="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+                <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
+                    <div class="inline-flex items-center space-x-2 px-3 py-1.5 rounded-full bg-neon-purple/10 border border-neon-purple/30 text-neon-purple text-xs font-semibold">
+                        <i class="fa-solid fa-bolt text-neon-yellow"></i>
+                        <span>專為吉他社、熱音社、管樂社與 Beats 創作者打造</span>
+                    </div>
+                    <h1 class="text-3xl sm:text-5xl font-black text-white leading-tight">
+                        把靈感留給創作，<br class="hidden sm:inline" />
+                        把繁瑣交給 <span class="bg-clip-text text-transparent bg-gradient-to-r from-neon-purple via-neon-pink to-neon-cyan text-glow">SoundVault</span>
+                    </h1>
+                    <p class="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                        不再讓散落手寫本的歌詞、記不清的樂理幾合弦、混亂的團練 Setlist 與無止盡的練習焦慮打擾你的音樂夢。這是屬於高中音樂人的「第二大腦 (Second Brain)」外包系統！
+                    </p>
+                    <div class="flex flex-wrap justify-center lg:justify-start gap-4 pt-2">
+                        <button onclick="scrollToSection('brain-vault')" class="px-6 py-3 rounded-xl bg-neon-purple hover:bg-neon-purple/90 text-white font-bold text-sm transition-all shadow-lg hover:shadow-neon-purple/40">
+                            <i class="fa-solid fa-cubes-stacked mr-2"></i>探索大腦資料庫
+                        </button>
+                        <button onclick="toggleFAQModal()" class="px-6 py-3 rounded-xl bg-studio-card hover:bg-studio-hover text-slate-300 font-semibold text-sm border border-studio-border transition-all">
+                            <i class="fa-solid fa-circle-question mr-2"></i>為什麼需要大腦外包？
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Stats Dashboard Cards -->
+                <div class="lg:col-span-5 grid grid-cols-2 gap-4">
+                    <div class="p-5 rounded-2xl bg-studio-card/80 border border-studio-border hover:border-neon-cyan/50 transition-all flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">本週練琴總時數</span>
+                            <div class="w-8 h-8 rounded-lg bg-neon-cyan/10 flex items-center justify-center text-neon-cyan">
+                                <i class="fa-solid fa-stopwatch"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span id="stat-practice-hours" class="text-3xl font-black text-white">14.5</span>
+                            <span class="text-xs text-slate-400 ml-1">小時</span>
+                            <div class="w-full bg-slate-800 rounded-full h-1.5 mt-3">
+                                <div class="bg-neon-cyan h-1.5 rounded-full" style="width: 70%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-studio-card/80 border border-studio-border hover:border-neon-purple/50 transition-all flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">已庫存和聲與靈感</span>
+                            <div class="w-8 h-8 rounded-lg bg-neon-purple/10 flex items-center justify-center text-neon-purple">
+                                <i class="fa-solid fa-music"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span id="stat-saved-items" class="text-3xl font-black text-white">28</span>
+                            <span class="text-xs text-slate-400 ml-1">筆靈感</span>
+                            <div class="w-full bg-slate-800 rounded-full h-1.5 mt-3">
+                                <div class="bg-neon-purple h-1.5 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-studio-card/80 border border-studio-border hover:border-neon-pink/50 transition-all flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">近期表演/團練專案</span>
+                            <div class="w-8 h-8 rounded-lg bg-neon-pink/10 flex items-center justify-center text-neon-pink">
+                                <i class="fa-solid fa-users"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span id="stat-gigs-count" class="text-3xl font-black text-white">3</span>
+                            <span class="text-xs text-slate-400 ml-1">個專案進行中</span>
+                            <div class="w-full bg-slate-800 rounded-full h-1.5 mt-3">
+                                <div class="bg-neon-pink h-1.5 rounded-full" style="width: 40%"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-5 rounded-2xl bg-studio-card/80 border border-studio-border hover:border-neon-yellow/50 transition-all flex flex-col justify-between">
+                        <div class="flex justify-between items-start">
+                            <span class="text-slate-400 text-xs font-bold uppercase tracking-wider">大腦清晰度狀態</span>
+                            <div class="w-8 h-8 rounded-lg bg-neon-yellow/10 flex items-center justify-center text-neon-yellow">
+                                <i class="fa-solid fa-lightbulb"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <span class="text-2xl font-black text-white">極致專注</span>
+                            <span class="block text-xs text-slate-400 mt-1">無記憶過載風險</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Brain Modules Grid Section -->
+        <section id="brain-vault" class="space-y-6">
+            <!-- Filter Bar & Category Tabs -->
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-studio-border pb-4">
+                <div>
+                    <h2 class="text-2xl font-black text-white flex items-center space-x-2">
+                        <i class="fa-solid fa-network-wired text-neon-purple"></i>
+                        <span>外包大腦控制台 (Brain Modules)</span>
+                    </h2>
+                    <p class="text-xs text-slate-400 mt-1">依類別分類儲存你的靈感、樂理、團練規劃與練琴記錄</p>
+                </div>
+
+                <!-- Tag / Category Filter Buttons -->
+                <div class="flex flex-wrap gap-2" id="filter-buttons-container">
+                    <button onclick="filterVault('all')" data-filter="all" class="filter-btn px-4 py-1.5 rounded-xl text-xs font-bold bg-neon-purple text-white transition-all">
+                        全部資料 (<span id="count-all">0</span>)
+                    </button>
+                    <button onclick="filterVault('樂理')" data-filter="樂理" class="filter-btn px-4 py-1.5 rounded-xl text-xs font-bold bg-studio-card hover:bg-studio-hover text-slate-300 border border-studio-border transition-all">
+                        樂理和聲庫 (<span id="count-樂理">0</span>)
+                    </button>
+                    <button onclick="filterVault('靈感')" data-filter="靈感" class="filter-btn px-4 py-1.5 rounded-xl text-xs font-bold bg-studio-card hover:bg-studio-hover text-slate-300 border border-studio-border transition-all">
+                        靈感與歌詞 (<span id="count-靈感">0</span>)
+                    </button>
+                    <button onclick="filterVault('團練')" data-filter="團練" class="filter-btn px-4 py-1.5 rounded-xl text-xs font-bold bg-studio-card hover:bg-studio-hover text-slate-300 border border-studio-border transition-all">
+                        團練與表演 (<span id="count-團練">0</span>)
+                    </button>
+                    <button onclick="filterVault('練琴')" data-filter="練琴" class="filter-btn px-4 py-1.5 rounded-xl text-xs font-bold bg-studio-card hover:bg-studio-hover text-slate-300 border border-studio-border transition-all">
+                        練琴紀錄 (<span id="count-練琴">0</span>)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dynamic Vault Grid Container -->
+            <div id="vault-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamic cards populated by JavaScript -->
+            </div>
+        </section>
+
+        <!-- Interactive Toolbox & Practice Zone -->
+        <section class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            <!-- Tool 1: Interactive Chord Transposition Visualizer -->
+            <div class="lg:col-span-7 p-6 rounded-3xl glass-panel border border-studio-border space-y-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-xl font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-sliders text-neon-cyan"></i>
+                            <span>樂理大腦：即時轉調與和聲切換器</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">高中熱音必備：快速對照不同 Key 的常用和聲進行</p>
+                    </div>
+                    <span class="text-xs px-2.5 py-1 rounded-full bg-neon-cyan/10 text-neon-cyan font-mono border border-neon-cyan/20">Transpose Engine</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">選擇調性 (Key)</label>
+                        <select id="transposer-key" onchange="updateChordTransposer()" class="w-full bg-studio-bg border border-studio-border rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-neon-cyan">
+                            <option value="C">C Major (原調對照)</option>
+                            <option value="D">D Major</option>
+                            <option value="E">E Major</option>
+                            <option value="F">F Major</option>
+                            <option value="G">G Major</option>
+                            <option value="A">A Major</option>
+                            <option value="Bb">B♭ Major</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-2">選擇經典套路 (Progression)</label>
+                        <select id="transposer-pattern" onchange="updateChordTransposer()" class="w-full bg-studio-bg border border-studio-border rounded-xl px-4 py-2.5 text-sm font-bold text-white focus:outline-none focus:border-neon-cyan">
+                            <option value="royal">王道進行 (4 - 5 - 3 - 6)</option>
+                            <option value="pop">流行卡農 (1 - 5 - 6 - 3 - 4 - 1 - 4 - 5)</option>
+                            <option value="jazz">爵士經典 (2 - 5 - 1 - 6)</option>
+                            <option value="emotional">感性悲傷 (6 - 4 - 1 - 5)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Live Chord Cards Visualizer -->
+                <div class="p-5 rounded-2xl bg-studio-bg border border-studio-border/80">
+                    <div class="text-xs text-slate-400 font-semibold mb-3 flex justify-between">
+                        <span>目前調性進行視圖：</span>
+                        <span id="transposer-pattern-name" class="text-neon-purple font-mono">Royal Road (4-5-3-6)</span>
+                    </div>
+                    <div id="transposer-chords-display" class="flex flex-wrap gap-3">
+                        <!-- Transposed chord pills will render here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool 2: Integrated Pomodoro Practice Timer & Log -->
+            <div class="lg:col-span-5 p-6 rounded-3xl glass-panel border border-studio-border space-y-6 flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-xl font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-hourglass-half text-neon-pink"></i>
+                            <span>專注練琴番茄鐘 (Practice Timer)</span>
+                        </h3>
+                        <span class="text-xs px-2 py-1 rounded bg-neon-pink/10 text-neon-pink font-semibold">25 Min Focus</span>
+                    </div>
+
+                    <!-- Timer Display -->
+                    <div class="text-center py-6 bg-studio-bg rounded-2xl border border-studio-border my-2">
+                        <div id="pomo-timer-display" class="text-5xl font-black text-white font-mono tracking-wider">25:00</div>
+                        <div id="pomo-status-label" class="text-xs font-semibold text-slate-400 mt-2">準備開始專注樂器練習</div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="space-y-3">
+                    <div class="flex gap-3">
+                        <button id="pomo-start-btn" onclick="togglePomodoro()" class="flex-1 py-3 rounded-xl bg-neon-pink hover:bg-neon-pink/90 text-white font-bold text-sm transition-all shadow-lg hover:shadow-neon-pink/40 flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-play"></i>
+                            <span id="pomo-btn-text">開始專注練琴</span>
+                        </button>
+                        <button onclick="resetPomodoro()" class="px-4 py-3 rounded-xl bg-studio-card hover:bg-studio-hover border border-studio-border text-slate-300 font-bold text-sm transition-all">
+                            <i class="fa-solid fa-rotate-right"></i>
+                        </button>
+                    </div>
+                    <p class="text-xs text-center text-slate-500">完成一節番茄鐘將自動累加到「本週練琴時數」！</p>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <!-- Metronome Drawer / Modal -->
+    <div id="metronome-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-studio-card border border-neon-cyan/30 w-full max-w-md rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative transform scale-95 transition-transform duration-300" id="metronome-modal-content">
+            <button onclick="toggleMetronomeModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center space-y-2">
+                <div class="w-12 h-12 rounded-2xl bg-neon-cyan/10 border border-neon-cyan/30 text-neon-cyan mx-auto flex items-center justify-center text-2xl">
+                    <i class="fa-solid fa-compact-disc"></i>
+                </div>
+                <h3 class="text-2xl font-black text-white">Pro Audio 節拍器</h3>
+                <p class="text-xs text-slate-400">使用 Web Audio API 原生合成器，精確零延遲</p>
+            </div>
+
+            <!-- BPM Large Counter -->
+            <div class="text-center py-4 bg-studio-bg rounded-2xl border border-studio-border">
+                <div id="metronome-bpm-text" class="text-6xl font-black text-neon-cyan font-mono tracking-tighter">120</div>
+                <div class="text-xs font-bold text-slate-400 mt-1 uppercase tracking-widest">BPM (Beats Per Minute)</div>
+            </div>
+
+            <!-- BPM Range & Controls -->
+            <div class="space-y-4">
+                <div class="flex items-center space-x-4">
+                    <button onclick="adjustBPM(-5)" class="w-10 h-10 rounded-xl bg-studio-bg hover:bg-studio-hover border border-studio-border text-slate-200 font-bold">-5</button>
+                    <input type="range" id="bpm-slider" min="40" max="220" value="120" oninput="onBPMSliderChange(this.value)" class="flex-1 accent-neon-cyan h-2 bg-slate-800 rounded-lg cursor-pointer">
+                    <button onclick="adjustBPM(5)" class="w-10 h-10 rounded-xl bg-studio-bg hover:bg-studio-hover border border-studio-border text-slate-200 font-bold">+5</button>
+                </div>
+
+                <div class="flex justify-between gap-3">
+                    <button onclick="handleTapTempo()" class="flex-1 py-2.5 rounded-xl bg-studio-bg hover:bg-studio-hover border border-studio-border text-xs font-bold text-slate-300 transition-all flex items-center justify-center space-x-1.5">
+                        <i class="fa-solid fa-hand-pointer text-neon-purple"></i>
+                        <span>Tap Tempo (測速)</span>
+                    </button>
+                    <select id="metronome-subdivision" class="bg-studio-bg border border-studio-border text-xs font-bold text-slate-300 rounded-xl px-3 py-2.5 focus:outline-none">
+                        <option value="4">4 / 4 拍</option>
+                        <option value="3">3 / 4 拍</option>
+                        <option value="6">6 / 8 拍</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Metronome Play Button -->
+            <button id="metronome-toggle-btn" onclick="toggleMetronomePlay()" class="w-full py-4 rounded-xl bg-gradient-to-r from-neon-cyan to-blue-600 hover:opacity-90 text-slate-950 font-black text-lg transition-all shadow-lg hover:shadow-neon-cyan/40 flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-play" id="metro-btn-icon"></i>
+                <span id="metro-btn-text">開啟節拍器</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Capture Modal (Add New Brain Item) -->
+    <div id="quick-capture-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-studio-card border border-neon-purple/30 w-full max-w-xl rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative transform scale-95 transition-transform duration-300" id="quick-capture-modal-content">
+            <button onclick="closeQuickCaptureModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-neon-purple/20 border border-neon-purple/40 text-neon-purple flex items-center justify-center text-xl">
+                    <i class="fa-solid fa-brain"></i>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-white">大腦快速外包 Quick Capture</h3>
+                    <p class="text-xs text-slate-400">將瞬間靈感、樂理筆記或團練待辦寫入你的第二大腦</p>
+                </div>
+            </div>
+
+            <form id="quick-capture-form" onsubmit="handleQuickCaptureSubmit(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">標題 / 靈感主題 *</label>
+                    <input type="text" id="capture-title" required placeholder="例如：新歌 Verse 旋律進行 / 吉他社社展 Setlist" class="w-full bg-studio-bg border border-studio-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-neon-purple">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">大腦模組類別 *</label>
+                        <select id="capture-category" class="w-full bg-studio-bg border border-studio-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-neon-purple">
+                            <option value="靈感">靈感與歌詞庫</option>
+                            <option value="樂理">樂理與和聲庫</option>
+                            <option value="團練">團練與表演專案</option>
+                            <option value="練琴">練琴紀錄與目標</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">標籤 (Tags)</label>
+                        <input type="text" id="capture-tags" placeholder="例如：Demo, 吉他, 4536" class="w-full bg-studio-bg border border-studio-border rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-neon-purple">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 uppercase mb-1">詳細內容 / 和弦進行 / 歌詞片段 *</label>
+                    <textarea id="capture-content" rows="4" required placeholder="在這裡詳細記錄你的筆記、和弦對照或備忘事項..." class="w-full bg-studio-bg border border-studio-border rounded-xl p-4 text-sm text-white focus:outline-none focus:border-neon-purple"></textarea>
+                </div>
+
+                <div class="pt-2 flex justify-end space-x-3">
+                    <button type="button" onclick="closeQuickCaptureModal()" class="px-5 py-2.5 rounded-xl bg-studio-bg hover:bg-studio-hover text-slate-400 text-sm font-bold transition-all">取消</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl bg-neon-purple hover:bg-neon-purple/90 text-white font-bold text-sm transition-all shadow-lg hover:shadow-neon-purple/40">儲存至大腦外包庫</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Detail Lightbox Modal -->
+    <div id="detail-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-studio-card border border-studio-border w-full max-w-2xl rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative transform scale-95 transition-transform duration-300 max-h-[90vh] overflow-y-auto" id="detail-modal-content">
+            <button onclick="closeDetailModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="flex items-center space-x-3 border-b border-studio-border pb-4">
+                <span id="detail-badge" class="px-3 py-1 rounded-full text-xs font-bold bg-neon-purple/20 text-neon-purple border border-neon-purple/30">模組</span>
+                <span id="detail-date" class="text-xs text-slate-400 font-mono">2026-11-07</span>
+            </div>
+
+            <div>
+                <h3 id="detail-title" class="text-2xl font-black text-white">標題載入中...</h3>
+                <div id="detail-tags" class="flex flex-wrap gap-2 mt-2">
+                    <!-- Dynamic Tag Pills -->
+                </div>
+            </div>
+
+            <!-- Waveform Canvas Preview (Simulated Audio Signal) -->
+            <div id="waveform-container" class="bg-studio-bg p-4 rounded-2xl border border-studio-border hidden">
+                <div class="text-xs font-semibold text-slate-400 mb-2 flex justify-between items-center">
+                    <span><i class="fa-solid fa-waveform mr-1 text-neon-cyan"></i> 模擬聲波波形 Preview</span>
+                    <button onclick="playSimulatedAudio()" id="simulated-audio-btn" class="px-2.5 py-1 rounded bg-neon-cyan/20 text-neon-cyan text-xs font-bold hover:bg-neon-cyan/30">
+                        <i class="fa-solid fa-play mr-1"></i>試聽音效
+                    </button>
+                </div>
+                <canvas id="waveform-canvas" class="w-full h-16 rounded bg-slate-950/60"></canvas>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="space-y-2">
+                <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider">筆記與外包詳細內容</h4>
+                <div id="detail-body" class="bg-studio-bg p-5 rounded-2xl border border-studio-border text-slate-200 text-sm whitespace-pre-line leading-relaxed font-mono">
+                    載入中...
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center pt-2 border-t border-studio-border">
+                <button id="detail-delete-btn" onclick="deleteCurrentItem()" class="px-4 py-2 rounded-xl bg-neon-pink/10 hover:bg-neon-pink/20 text-neon-pink text-xs font-bold border border-neon-pink/30 transition-all">
+                    <i class="fa-solid fa-trash mr-1.5"></i>刪除此項目
+                </button>
+                <button onclick="closeDetailModal()" class="px-6 py-2 rounded-xl bg-neon-purple text-white text-xs font-bold">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Accordion Modal -->
+    <div id="faq-modal" class="fixed inset-0 z-50 bg-black/75 backdrop-blur-md flex items-center justify-center hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-studio-card border border-studio-border w-full max-w-2xl rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 relative transform scale-95 transition-transform duration-300 max-h-[85vh] overflow-y-auto">
+            <button onclick="toggleFAQModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-xl">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center space-y-2">
+                <h3 class="text-2xl font-black text-white">為什麼高中音樂人需要「大腦外包」？</h3>
+                <p class="text-xs text-slate-400">Second Brain for High School Musicians</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="p-4 rounded-2xl bg-studio-bg border border-studio-border space-y-2">
+                    <h4 class="font-bold text-neon-purple text-sm flex items-center">
+                        <i class="fa-solid fa-circle-check mr-2"></i>問題 1：大考壓力大，靈感總是瞬間消失怎麼辦？
+                    </h4>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        高中生每天要處理課業與音樂，大腦記憶體有限。SoundVault 提供 Quick Capture 系統，讓你在上學途中、課間或是練琴空檔 5 秒內記錄旋律與歌詞，把大腦容量留給真正的音樂創作！
+                    </p>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-studio-bg border border-studio-border space-y-2">
+                    <h4 class="font-bold text-neon-cyan text-sm flex items-center">
+                        <i class="fa-solid fa-circle-check mr-2"></i>問題 2：樂理和聲太多太雜，表演前總是記錯和弦？
+                    </h4>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        這裡內建王道進行、卡農進行與爵士 251 等常用樂理庫，還支援即時 Transpose (轉调) 對照。不用再翻厚重的樂理講義，秒查秒用。
+                    </p>
+                </div>
+
+                <div class="p-4 rounded-2xl bg-studio-bg border border-studio-border space-y-2">
+                    <h4 class="font-bold text-neon-pink text-sm flex items-center">
+                        <i class="fa-solid fa-circle-check mr-2"></i>問題 3：樂團團練效率低，表演前器材 Setlist 混亂？
+                    </h4>
+                    <p class="text-xs text-slate-300 leading-relaxed">
+                        將 Setlist、團員分工與 PA 音響檢查表建立專案卡片，所有人同步統一目標，告別社展前夕的慌亂與爭吵。
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="w-full border-t border-studio-border/60 py-8 bg-studio-bg/60 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center space-y-3">
+            <div class="flex items-center justify-center space-x-2 text-slate-400 text-sm font-semibold">
+                <i class="fa-solid fa-brain text-neon-purple"></i>
+                <span>SoundVault 2026 - High School Musician Second Brain System</span>
+            </div>
+            <p class="text-xs text-slate-500">專為高中樂團、熱音社、吉他社、管樂社與數位音樂創作者設計 | 讓音樂創作更流暢有效率</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- Sample Initial Vault Data ---
+        const INITIAL_VAULT_ITEMS = [
+            {
+                id: '1',
+                title: '社展原創曲 Chord Progression',
+                category: '樂理',
+                tags: ['王道進行', 'C Major', '吉他'],
+                content: 'Verse: C - G/B - Am - Em/G - F - C/E - Dm7 - G4\nChorus: F - G - Em - Am (經典 4536 轉副歌感性推進)',
+                date: '2026-11-05',
+                hasWaveform: false
+            },
+            {
+                id: '2',
+                title: '雨天放學的主歌歌詞片段',
+                category: '靈感',
+                tags: ['Demo', '歌詞', 'Lo-Fi'],
+                content: '「走廊盡頭的吉他聲，混著午後的陣雨，\n黑板上沒擦乾淨的音符，是我們還沒寫完的組曲...」\nBPM 設在 85，適合配簡單的 Rhodes 琴彈奏。',
+                date: '2026-11-06',
+                hasWaveform: true
+            },
+            {
+                id: '3',
+                title: '冬季成果展 Setlist & 團練清單',
+                category: '團練',
+                tags: ['社展', '熱音社', 'Setlist'],
+                content: '1. 開場曲《狂想曲》\n2. 翻唱《晴天》\n3. 社合創作曲\n\n[PA Setup 檢查點]\n- 主唱麥克風 EQ 增益微調\n- 吉他綜效器 Line-out 檢查\n- 鼓組收音 Check',
+                date: '2026-11-04',
+                hasWaveform: false
+            },
+            {
+                id: '4',
+                title: '16 分音符雙手切音速練目標',
+                category: '練琴',
+                tags: ['電吉他', '基本功', '速彈'],
+                content: '目標 BPM: 140 下保持乾淨點擊感\n注意事項：左手按弦要緊，右手 Pick 角度保持 45 度，避免雜音。每晚練 20 分鐘。',
+                date: '2026-11-07',
+                hasWaveform: false
+            }
+        ];
+
+        // System State
+        let vaultItems = JSON.parse(localStorage.getItem('soundvault_items')) || INITIAL_VAULT_ITEMS;
+        let currentFilter = 'all';
+        let activeItemId = null;
+
+        // --- Web Audio API Metronome Engine ---
+        let audioContext = null;
+        let isMetronomePlaying = false;
+        let metronomeBPM = 120;
+        let metronomeTimerID = null;
+        let currentBeat = 0;
+        let tapTimes = [];
+
+        // --- Pomodoro State ---
+        let pomoMinutes = 25;
+        let pomoSeconds = 0;
+        let pomoTimerID = null;
+        let isPomoRunning = false;
+        let totalPracticeSeconds = 14.5 * 3600; // default 14.5 hours in sec
+
+        // Initialize App on DOM Load
+        window.onload = function() {
+            renderVaultGrid();
+            updateCounts();
+            updateChordTransposer();
+            initAudioContext();
+        };
+
+        function initAudioContext() {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (AudioContext) {
+                audioContext = new AudioContext();
+            }
+        }
+
+        // --- Vault Render & Filtering Logic ---
+        function renderVaultGrid() {
+            const grid = document.getElementById('vault-grid');
+            grid.innerHTML = '';
+
+            const filteredItems = currentFilter === 'all' 
+                ? vaultItems 
+                : vaultItems.filter(item => item.category === currentFilter);
+
+            if (filteredItems.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-500 bg-studio-card/40 rounded-3xl border border-dashed border-studio-border">
+                        <i class="fa-solid fa-folder-open text-4xl mb-3 text-slate-600"></i>
+                        <p class="text-sm font-semibold">此分類尚無筆記或靈感資料</p>
+                        <button onclick="openQuickCaptureModal()" class="mt-3 text-xs text-neon-purple underline font-bold">點此新增一筆大腦外包</button>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredItems.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "group relative bg-studio-card hover:bg-studio-hover p-6 rounded-2xl border border-studio-border hover:border-neon-purple/50 transition-all duration-300 cursor-pointer flex flex-col justify-between shadow-lg hover:shadow-neon-purple/10";
+                card.onclick = () => openDetailModal(item.id);
+
+                let badgeColor = "bg-neon-purple/20 text-neon-purple border-neon-purple/30";
+                if (item.category === '樂理') badgeColor = "bg-neon-cyan/20 text-neon-cyan border-neon-cyan/30";
+                if (item.category === '團練') badgeColor = "bg-neon-pink/20 text-neon-pink border-neon-pink/30";
+                if (item.category === '練琴') badgeColor = "bg-neon-yellow/20 text-neon-yellow border-neon-yellow/30";
+
+                const tagPills = item.tags.map(t => `<span class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-md font-mono">#${t}</span>`).join(' ');
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center mb-3">
+                            <span class="text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${badgeColor}">${item.category}外包</span>
+                            <span class="text-[11px] text-slate-500 font-mono">${item.date}</span>
+                        </div>
+                        <h3 class="text-base font-bold text-white group-hover:text-neon-purple transition-colors line-clamp-1 mb-2">${escapeHtml(item.title)}</h3>
+                        <p class="text-xs text-slate-400 line-clamp-3 leading-relaxed font-mono whitespace-pre-line">${escapeHtml(item.content)}</p>
+                    </div>
+                    
+                    <div class="mt-4 pt-3 border-t border-studio-border/60 flex items-center justify-between">
+                        <div class="flex flex-wrap gap-1">
+                            ${tagPills}
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-xs text-slate-600 group-hover:text-neon-purple group-hover:translate-x-1 transition-all"></i>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function filterVault(cat) {
+            currentFilter = cat;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                if (btn.getAttribute('data-filter') === cat) {
+                    btn.className = "filter-btn px-4 py-1.5 rounded-xl text-xs font-bold bg-neon-purple text-white transition-all";
+                } else {
+                    btn.className = "filter-btn px-4 py-1.5 rounded-xl text-xs font-bold bg-studio-card hover:bg-studio-hover text-slate-300 border border-studio-border transition-all";
+                }
+            });
+            renderVaultGrid();
+        }
+
+        function updateCounts() {
+            document.getElementById('count-all').innerText = vaultItems.length;
+            document.getElementById('count-樂理').innerText = vaultItems.filter(i => i.category === '樂理').length;
+            document.getElementById('count-靈感').innerText = vaultItems.filter(i => i.category === '靈感').length;
+            document.getElementById('count-團練').innerText = vaultItems.filter(i => i.category === '團練').length;
+            document.getElementById('count-練琴').innerText = vaultItems.filter(i => i.category === '練琴').length;
+            document.getElementById('stat-saved-items').innerText = vaultItems.length;
+        }
+
+        // --- Transposer Visualizer Logic ---
+        const CHORD_PATTERNS = {
+            royal: { name: '王道進行 (4-5-3-6)', degrees: [3, 4, 2, 5] },
+            pop: { name: '流行卡農 (1-5-6-3-4-1-4-5)', degrees: [0, 4, 5, 2, 3, 0, 3, 4] },
+            jazz: { name: '爵士經典 (2-5-1-6)', degrees: [1, 4, 0, 5] },
+            emotional: { name: '感性悲傷 (6-4-1-5)', degrees: [5, 3, 0, 4] }
+        };
+
+        const KEY_NOTES = {
+            'C':  ['C', 'Dm', 'Em', 'F', 'G', 'Am', 'Bdim'],
+            'D':  ['D', 'Em', 'F#m', 'G', 'A', 'Bm', 'C#dim'],
+            'E':  ['E', 'F#m', 'G#m', 'A', 'B', 'C#m', 'D#dim'],
+            'F':  ['F', 'Gm', 'Am', 'B♭', 'C', 'Dm', 'Edim'],
+            'G':  ['G', 'Am', 'Bm', 'C', 'D', 'Em', 'F#dim'],
+            'A':  ['A', 'Bm', 'C#m', 'D', 'E', 'F#m', 'G#dim'],
+            'Bb': ['B♭', 'Cm', 'Dm', 'E♭', 'F', 'Gm', 'Adim']
+        };
+
+        function updateChordTransposer() {
+            const key = document.getElementById('transposer-key').value;
+            const patKey = document.getElementById('transposer-pattern').value;
+            const pattern = CHORD_PATTERNS[patKey];
+            const notes = KEY_NOTES[key];
+
+            document.getElementById('transposer-pattern-name').innerText = `${pattern.name} in ${key}`;
+
+            const container = document.getElementById('transposer-chords-display');
+            container.innerHTML = '';
+
+            pattern.degrees.forEach(degIndex => {
+                const chordName = notes[degIndex];
+                const card = document.createElement('div');
+                card.className = "flex-1 min-w-[70px] py-3 px-4 rounded-xl bg-studio-card border border-neon-cyan/30 text-center font-bold text-white shadow-md hover:border-neon-cyan transition-all";
+                card.innerHTML = `
+                    <div class="text-xs text-neon-cyan font-mono mb-1">Degree ${degIndex + 1}</div>
+                    <div class="text-lg font-black">${chordName}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- Pomodoro Timer Logic ---
+        function togglePomodoro() {
+            if (isPomoRunning) {
+                clearInterval(pomoTimerID);
+                isPomoRunning = false;
+                document.getElementById('pomo-btn-text').innerText = '繼續專注';
+                document.getElementById('pomo-status-label').innerText = '計時已暫停';
+            } else {
+                isPomoRunning = true;
+                document.getElementById('pomo-btn-text').innerText = '暫停計時';
+                document.getElementById('pomo-status-label').innerText = '正在高效專注練琴中...';
+                pomoTimerID = setInterval(runPomodoro, 1000);
+            }
+        }
+
+        function runPomodoro() {
+            if (pomoSeconds === 0) {
+                if (pomoMinutes === 0) {
+                    clearInterval(pomoTimerID);
+                    isPomoRunning = false;
+                    alert("🎉 恭喜完成 25 分鐘練習！時數已記錄至您的音樂大腦。");
+                    totalPracticeSeconds += 25 * 60;
+                    document.getElementById('stat-practice-hours').innerText = (totalPracticeSeconds / 3600).toFixed(1);
+                    resetPomodoro();
+                    return;
+                }
+                pomoMinutes--;
+                pomoSeconds = 59;
+            } else {
+                pomoSeconds--;
+            }
+            updatePomoDisplay();
+        }
+
+        function resetPomodoro() {
+            clearInterval(pomoTimerID);
+            isPomoRunning = false;
+            pomoMinutes = 25;
+            pomoSeconds = 0;
+            updatePomoDisplay();
+            document.getElementById('pomo-btn-text').innerText = '開始專注練琴';
+            document.getElementById('pomo-status-label').innerText = '準備開始專注樂器練習';
+        }
+
+        function updatePomoDisplay() {
+            const m = String(pomoMinutes).padStart(2, '0');
+            const s = String(pomoSeconds).padStart(2, '0');
+            document.getElementById('pomo-timer-display').innerText = `${m}:${s}`;
+        }
+
+        // --- Metronome Implementation (Web Audio API) ---
+        function toggleMetronomePlay() {
+            if (!audioContext) initAudioContext();
+            if (audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+
+            isMetronomePlaying = !isMetronomePlaying;
+
+            const btnText = document.getElementById('metro-btn-text');
+            const btnIcon = document.getElementById('metro-btn-icon');
+
+            if (isMetronomePlaying) {
+                btnText.innerText = "停止節拍器";
+                btnIcon.className = "fa-solid fa-square";
+                currentBeat = 0;
+                scheduleMetronomeTick();
+            } else {
+                btnText.innerText = "開啟節拍器";
+                btnIcon.className = "fa-solid fa-play";
+                clearTimeout(metronomeTimerID);
+            }
+        }
+
+        function scheduleMetronomeTick() {
+            if (!isMetronomePlaying) return;
+
+            playClickSound();
+
+            const intervalMs = (60 / metronomeBPM) * 1000;
+            metronomeTimerID = setTimeout(scheduleMetronomeTick, intervalMs);
+        }
+
+        function playClickSound() {
+            if (!audioContext) return;
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+
+            // Accent beat on 1st beat
+            const sub = parseInt(document.getElementById('metronome-subdivision').value) || 4;
+            const isAccent = (currentBeat % sub === 0);
+            osc.frequency.value = isAccent ? 1200 : 800;
+
+            gain.gain.setValueAtTime(1, audioContext.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.05);
+
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+
+            osc.start();
+            osc.stop(audioContext.currentTime + 0.05);
+
+            currentBeat++;
+        }
+
+        function adjustBPM(delta) {
+            metronomeBPM = Math.min(220, Math.max(40, metronomeBPM + delta));
+            syncBPMUI();
+        }
+
+        function onBPMSliderChange(val) {
+            metronomeBPM = parseInt(val);
+            syncBPMUI();
+        }
+
+        function syncBPMUI() {
+            document.getElementById('metronome-bpm-text').innerText = metronomeBPM;
+            document.getElementById('nav-bpm-display').innerText = `${metronomeBPM} BPM`;
+            document.getElementById('bpm-slider').value = metronomeBPM;
+        }
+
+        function handleTapTempo() {
+            const now = Date.now();
+            tapTimes.push(now);
+
+            if (tapTimes.length > 4) tapTimes.shift();
+
+            if (tapTimes.length > 1) {
+                const intervals = [];
+                for (let i = 1; i < tapTimes.length; i++) {
+                    intervals.push(tapTimes[i] - tapTimes[i - 1]);
+                }
+                const avgInterval = intervals.reduce((a, b) => a + b) / intervals.length;
+                const calculatedBPM = Math.round(60000 / avgInterval);
+                if (calculatedBPM >= 40 && calculatedBPM <= 220) {
+                    metronomeBPM = calculatedBPM;
+                    syncBPMUI();
+                }
+            }
+        }
+
+        function toggleMetronomeModal() {
+            const modal = document.getElementById('metronome-modal');
+            const content = document.getElementById('metronome-modal-content');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                setTimeout(() => {
+                    modal.classList.remove('opacity-0');
+                    content.classList.remove('scale-95');
+                }, 10);
+            } else {
+                modal.classList.add('opacity-0');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            }
+        }
+
+        // --- Modal Interactions (Quick Capture, Detail, FAQ) ---
+        function openQuickCaptureModal() {
+            const modal = document.getElementById('quick-capture-modal');
+            const content = document.getElementById('quick-capture-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeQuickCaptureModal() {
+            const modal = document.getElementById('quick-capture-modal');
+            const content = document.getElementById('quick-capture-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.getElementById('quick-capture-form').reset();
+            }, 300);
+        }
+
+        function handleQuickCaptureSubmit(e) {
+            e.preventDefault();
+            const title = document.getElementById('capture-title').value.trim();
+            const category = document.getElementById('capture-category').value;
+            const tagsRaw = document.getElementById('capture-tags').value.trim();
+            const content = document.getElementById('capture-content').value.trim();
+
+            const tags = tagsRaw ? tagsRaw.split(',').map(t => t.trim()) : [category];
+
+            const newItem = {
+                id: Date.now().toString(),
+                title,
+                category,
+                tags,
+                content,
+                date: new Date().toISOString().split('T')[0],
+                hasWaveform: category === '靈感'
+            };
+
+            vaultItems.unshift(newItem);
+            localStorage.setItem('soundvault_items', JSON.stringify(vaultItems));
+
+            renderVaultGrid();
+            updateCounts();
+            closeQuickCaptureModal();
+        }
+
+        function openDetailModal(id) {
+            activeItemId = id;
+            const item = vaultItems.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('detail-title').innerText = item.title;
+            document.getElementById('detail-badge').innerText = `${item.category}模組`;
+            document.getElementById('detail-date').innerText = item.date;
+            document.getElementById('detail-body').innerText = item.content;
+
+            const tagsContainer = document.getElementById('detail-tags');
+            tagsContainer.innerHTML = item.tags.map(t => `<span class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-lg border border-slate-700">#${t}</span>`).join(' ');
+
+            const waveformContainer = document.getElementById('waveform-container');
+            if (item.hasWaveform || item.category === '靈感') {
+                waveformContainer.classList.remove('hidden');
+                drawSimulatedWaveform();
+            } else {
+                waveformContainer.classList.add('hidden');
+            }
+
+            const modal = document.getElementById('detail-modal');
+            const content = document.getElementById('detail-modal-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                content.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closeDetailModal() {
+            const modal = document.getElementById('detail-modal');
+            const content = document.getElementById('detail-modal-content');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        function deleteCurrentItem() {
+            if (!activeItemId) return;
+            vaultItems = vaultItems.filter(i => i.id !== activeItemId);
+            localStorage.setItem('soundvault_items', JSON.stringify(vaultItems));
+            renderVaultGrid();
+            updateCounts();
+            closeDetailModal();
+        }
+
+        function toggleFAQModal() {
+            const modal = document.getElementById('faq-modal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            } else {
+                modal.classList.add('opacity-0');
+                setTimeout(() => modal.classList.add('hidden'), 300);
+            }
+        }
+
+        // --- Waveform Canvas Generator ---
+        function drawSimulatedWaveform() {
+            const canvas = document.getElementById('waveform-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth || 500;
+            canvas.height = canvas.offsetHeight || 64;
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#06b6d4';
+
+            const bars = 60;
+            const barWidth = canvas.width / bars;
+
+            for (let i = 0; i < bars; i++) {
+                const height = Math.random() * (canvas.height - 10) + 5;
+                const x = i * barWidth;
+                const y = (canvas.height - height) / 2;
+                ctx.fillRect(x, y, barWidth - 2, height);
+            }
+        }
+
+        function playSimulatedAudio() {
+            if (!audioContext) initAudioContext();
+            if (audioContext.state === 'suspended') audioContext.resume();
+
+            const btn = document.getElementById('simulated-audio-btn');
+            btn.innerHTML = `<i class="fa-solid fa-spinner animate-spin mr-1"></i>播放中...`;
+
+            // Synthesize a pleasant chord arpeggio
+            const freqs = [261.63, 329.63, 392.00, 523.25]; // C Major
+            freqs.forEach((freq, idx) => {
+                const osc = audioContext.createOscillator();
+                const gain = audioContext.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.value = freq;
+
+                const startTime = audioContext.currentTime + (idx * 0.15);
+                gain.gain.setValueAtTime(0, startTime);
+                gain.gain.linearRampToValueAtTime(0.2, startTime + 0.05);
+                gain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.2);
+
+                osc.connect(gain);
+                gain.connect(audioContext.destination);
+
+                osc.start(startTime);
+                osc.stop(startTime + 1.2);
+            });
+
+            setTimeout(() => {
+                btn.innerHTML = `<i class="fa-solid fa-play mr-1"></i>試聽音效`;
+            }, 1200);
+        }
+
+        // Utility: Scroll Smoothly
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Utility: HTML Escaper
+        function escapeHtml(str) {
+            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
